@@ -129,6 +129,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+NASA_space_apps/
 
 # Spyder project settings
 .spyderproject
