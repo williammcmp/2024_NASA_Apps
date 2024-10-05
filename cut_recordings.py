@@ -10,7 +10,7 @@ Loop through a series of seismic recordings and find the seismic events, then sa
 
 import ray
 import pandas as pd
-from src.utilis import load_dataframe, save_dataframe, get_file_names, get_mseed_path, get_sample_rate
+from src.utilis import load_dataframe, save_dataframe, get_file_names, get_mseed_path, get_sample_rate, get_col_from_pattern
 from src.signal_processing import find_seismic_event
 
 # Initialize Ray
@@ -39,16 +39,22 @@ def process_file(index, name):
     ref_row = reference_df.iloc[index]  # the expected information from the cataloged data
     signal_data = load_dataframe(signal_data_folder + name)  # loading the signal data
 
+    # # Accessing the recordings metadata ---> needed to set up for the rest of the project
+    velocity_field = get_col_from_pattern(signal_data, 'vel')
+    time_field = get_col_from_pattern(signal_data, 'rel')
+
     # Find the sample frequency from the minimized data file
     sample_rate = get_sample_rate(get_mseed_path(signal_data_folder + name))
 
     # Find the seismic event from the signal data
     seismic_event, seismic_event_start = find_seismic_event(
         signal_data, 
+        velcoity_field=velocity_field,
+        time_field=time_field,
         sampleFreq=sample_rate, 
         showPlot=False, 
         plotPath=plot_paths + name + '.png', 
-        expected_start=ref_row['time_rel(sec)']
+        expected_start=ref_row[get_col_from_pattern(ref_row, 'rel')]
     )
 
     # Save the signal data
@@ -57,7 +63,7 @@ def process_file(index, name):
     # Return the stats for this file
     return {
         'filename': name,
-        'Expected start (s)': ref_row['time_rel(sec)'],
+        'Expected start (s)': ref_row[get_col_from_pattern(ref_row, 'rel')],
         'Calculated start (s)': seismic_event_start
     }
 

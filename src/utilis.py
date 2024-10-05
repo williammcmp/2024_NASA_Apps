@@ -163,3 +163,20 @@ def get_sample_rate(mseed_file: str) -> float:
     st = read(mseed_file)
     return st[0].stats.sampling_rate
 
+
+def get_col_from_pattern(data : pd.DataFrame, pattern:  str) -> str:
+    """
+
+    Gets the specific colums from the data frame that matches the column pattern
+    - Time --> use 'rel' to target 'rel_time*' or 'time_rel*
+    - Velocity --> use 'vel) to target 'Velocity*'
+
+    Args:
+        data (pd.DataFrame): the loaded dataFrame
+        patternstr (str): the patten to match the column names against
+
+    Returns:
+        str: The targeted colunm name that matches the pattern
+    """
+    return [col for col in data.columns if pattern in col.lower()][0]
+
