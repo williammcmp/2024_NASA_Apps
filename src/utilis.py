@@ -72,9 +72,9 @@ def load_dataframe(file_path: str, enable_pyarrow = False):
             else:
                 df = pd.read_parquet(file_path) # let pandas decide what engine to use
         elif file_format == 'csv':
-            load_data_from_csv(file_path)
+            df = load_data_from_csv(file_path)
         elif file_format in ['xls', 'xlsx']: # For the various types of Excel file types
-            load_data_from_excel(file_path)
+            df = load_data_from_excel(file_path)
             # For the losers who want to load un-listed formats
             raise ValueError(f"Unsupported file format: {file_format}")
 
@@ -109,3 +109,30 @@ def get_file_names(folder_path : str, filter_pattern : str = None):
         file_names = [col for col in file_names if filter_pattern in col.lower()]
 
     return file_names
+
+
+def get_window_df( data: pd.DataFrame, start_index: int, end_index: int = None, length: int = None) -> pd.DataFrame:
+    """
+    Returns a windowed portion of the DataFrame based on the provided index range.
+    
+    Args:
+        data (pd.DataFrame): The input DataFrame.
+        start_index (int): The starting index of the window.
+        end_index (int, optional): The ending index of the window. Defaults to None.
+        length (int, optional): The length of the window if end_index is not provided. Defaults to None.
+    
+    Returns:
+        pd.DataFrame: The sliced window of the DataFrame.
+    """
+    
+    # Allow for lengths to be defined
+    if length is not None and end_index is None:
+        end_index = start_index + length
+
+    # Check the end index is after start index
+    if end_index < start_index:
+        print(f"Start index [{start_index}] must be before end index [{end_index}]")
+        return data
+
+    return data.iloc[start_index:end_index]
+    
