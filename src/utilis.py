@@ -8,8 +8,10 @@ Utilities for required across the repo
 @author: william.mcm.p
 """
 
+from obspy import read
 import pandas as pd
 import os
+
 
 from src.loading_and_saving_data import load_data_from_csv, load_data_from_excel
 
@@ -134,12 +136,30 @@ def get_timed_window( data: pd.DataFrame, start_time: int, end_time: int, field:
     mask = (data[field] >= start_time) & (data[field] <= end_time)
     return data[mask]
 
+def get_mseed_path(filename: str) -> str:
+    """
+    Converts a filename with a '.csv' extension to a '.mseed' extension.
+    
+    Args:
+        filename (str): The original filename with '.csv' extension.
+    
+    Returns:
+        str: The filename with the '.mseed' extension.
+    """
+    name, ext = os.path.splitext(filename)
+    mseed_filename = name + '.mseed'
+    return mseed_filename
 
-def get_sample_rate_from_file_name(filename : str) -> float:
-    # from the file name, get the sample rate based on the in the file name:
-    # Example -> 'xa.s12.00.mhz.1970-01-19HR00_evid00002.csv'
-
-    # Will need to code in a map or relation to the appllo missions the @michaelB posted into the chat.
-    sample_rate = 10 #Hz
-    return sample_rate
+def get_sample_rate(mseed_file: str) -> float:
+    """
+    Retrieves the sampling rate from a '.mseed' file.
+    
+    Args:
+        mseed_file (str): The path to the '.mseed' file.
+    
+    Returns:
+        float: The sampling rate of the data in the file.
+    """
+    st = read(mseed_file)
+    return st[0].stats.sampling_rate
 
