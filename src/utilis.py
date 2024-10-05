@@ -133,5 +133,13 @@ def get_timed_window( data: pd.DataFrame, start_time: int, end_time: int, field:
     # Create a mask for the desired time window
     mask = (data[field] >= start_time) & (data[field] <= end_time)
     return data[mask]
-    
+
+
+def get_sample_rate_from_file_name(filename : str) -> float:
+    # from the file name, get the sample rate based on the in the file name:
+    # Example -> 'xa.s12.00.mhz.1970-01-19HR00_evid00002.csv'
+
+    # Will need to code in a map or relation to the appllo missions the @michaelB posted into the chat.
+    sample_rate = 10 #Hz
+    return sample_rate
 
