@@ -14,7 +14,7 @@ from src.utilis import load_dataframe, save_dataframe, get_file_names, get_mseed
 from src.signal_processing import find_seismic_event
 
 # Initialize Ray
-ray.init(num_cpus=12)
+ray.init(num_cpus=8) # Chnage this number based on the number CPU cores you have avaliable on you system
 
 # The path where all the raw_data files are located
 signal_data_folder = "E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Data/lunar/training/data/S12_GradeA/"
@@ -52,7 +52,7 @@ def process_file(index, name):
     )
 
     # Save the signal data
-    # save_dataframe(seismic_event, seismic_event_output_folder + name)
+    save_dataframe(seismic_event, seismic_event_output_folder + name)
 
     # Return the stats for this file
     return {
