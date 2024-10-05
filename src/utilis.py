@@ -8,8 +8,10 @@ Utilities for required across the repo
 @author: william.mcm.p
 """
 
+from obspy import read
 import pandas as pd
 import os
+
 
 from src.loading_and_saving_data import load_data_from_csv, load_data_from_excel
 
@@ -133,5 +135,31 @@ def get_timed_window( data: pd.DataFrame, start_time: int, end_time: int, field:
     # Create a mask for the desired time window
     mask = (data[field] >= start_time) & (data[field] <= end_time)
     return data[mask]
+
+def get_mseed_path(filename: str) -> str:
+    """
+    Converts a filename with a '.csv' extension to a '.mseed' extension.
     
+    Args:
+        filename (str): The original filename with '.csv' extension.
+    
+    Returns:
+        str: The filename with the '.mseed' extension.
+    """
+    name, ext = os.path.splitext(filename)
+    mseed_filename = name + '.mseed'
+    return mseed_filename
+
+def get_sample_rate(mseed_file: str) -> float:
+    """
+    Retrieves the sampling rate from a '.mseed' file.
+    
+    Args:
+        mseed_file (str): The path to the '.mseed' file.
+    
+    Returns:
+        float: The sampling rate of the data in the file.
+    """
+    st = read(mseed_file)
+    return st[0].stats.sampling_rate
 
