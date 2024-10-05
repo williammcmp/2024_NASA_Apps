@@ -83,10 +83,8 @@ This will ensure all necessary packages, including Streamlit, are installed.
 Once your virtual environment is activated and dependencies are installed, you can run the Streamlit app using the following command:
 
 ```bash
-streamlit run app.py
+streamlit run Streamlit.py
 ```
-
-Make sure to replace `app.py` with the name of your Streamlit application file.
 
 ### 4. Open the Streamlit App in Your Browser
 
