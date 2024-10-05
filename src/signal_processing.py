@@ -76,14 +76,14 @@ def lowpass_filter(
     filtered_data = filtfilt(b, a, data_series)
     return filtered_data
 
-def find_seismic_event(signal_df : pd.DataFrame, target_field: str = 'velocity(m/s)', sampleFreq : float = 6.625, time_field : str = 'time_rel(sec)', showPlot: bool = False, plotPath: str = None, expected_start : float = None) -> pd.DataFrame:
+def find_seismic_event(signal_df : pd.DataFrame, velcoity_field: str = 'velocity(m/s)', sampleFreq : float = 6.625, time_field : str = 'time_rel(sec)', showPlot: bool = False, plotPath: str = None, expected_start : float = None) -> pd.DataFrame:
 
     # Validate the the target field in present in the dataFrame
-    if target_field in signal_df.columns:
+    if velcoity_field in signal_df.columns:
         # Get the signal data series from the dataFrame
-        signal = signal_df[target_field]
+        signal = signal_df[velcoity_field]
     else:
-        print(f"Warning: {target_field} is NOT a valid filed in {signal_df.columns}")
+        print(f"Warning: {velcoity_field} is NOT a valid filed in {signal_df.columns}")
 
     # run the band pass filter on the signal
     high_passed_signal = highpass_filter(signal, 0.8, sampleFreq)
@@ -96,33 +96,34 @@ def find_seismic_event(signal_df : pd.DataFrame, target_field: str = 'velocity(m
     peak_index = np.argmax(filtered_signal_diff)
 
     # Get start/end  time of window
+    # TODO set different offsets based on if mars or lunar recordings 
     start_time = signal_df[time_field].iloc[peak_index] - 500 # offset to capture the front of the wave
-    end_time = signal_df[time_field].iloc[peak_index] + 5000 # offset of caputer end of the wave
+    end_time = start_time + 5000 # offset of caputer end of the wave
 
 
-    seismic_event = get_timed_window(signal_df, start_time, end_time)
+    seismic_event = get_timed_window(signal_df, start_time - 500, end_time)
 
     # Plotting the the outcome of the Seismic wave analysis
     if showPlot:
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots(3, figsize=(8, 6), sharex=False, sharey=False)
 
-        ax[0].plot(signal_df[time_field], signal_df[target_field], label="Raw - Signal")
-        ax[0].set_ylabel(target_field)
+        ax[0].plot(signal_df[time_field], signal_df[velcoity_field], label="Raw - Signal")
+        ax[0].set_ylabel(velcoity_field)
         ax[0].set_xlabel('Time (s)')
         ax[0].axvline(x=start_time, c='red', label='Guess of start Time')
         ax[0].set_title('Raw Signal')
         ax[0].legend()
 
         ax[1].plot(signal_df[time_field], filtered_signal, label="Bandpass filtered Signal")
-        ax[1].set_ylabel(target_field)
+        ax[1].set_ylabel(velcoity_field)
         ax[1].set_xlabel('Time (s)')
         ax[1].axvline(x=start_time, c='red', label='Guess of start Time')
         ax[1].set_title('Filtered Signal')
         ax[1].legend()
 
-        ax[2].plot(seismic_event[time_field], seismic_event[target_field], label="Raw - Seismic Event")
-        ax[2].set_ylabel(target_field)
+        ax[2].plot(seismic_event[time_field], seismic_event[velcoity_field], label="Raw - Seismic Event")
+        ax[2].set_ylabel(velcoity_field)
         ax[2].set_xlabel('Time (s)')
         ax[2].axvline(x=start_time, c='red', label='Guess of start Time')
         ax[2].set_title('Seismic Event')
