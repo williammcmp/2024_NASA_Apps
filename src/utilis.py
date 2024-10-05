@@ -111,28 +111,27 @@ def get_file_names(folder_path : str, filter_pattern : str = None):
     return file_names
 
 
-def get_window_df( data: pd.DataFrame, start_index: int, end_index: int = None, length: int = None) -> pd.DataFrame:
+def get_timed_window( data: pd.DataFrame, start_time: int, end_time: int, field:str = 'time_rel(sec)') -> pd.DataFrame:
     """
-    Returns a windowed portion of the DataFrame based on the provided index range.
+    Returns a windowed portion of the DataFrame based on the provided time range.
     
     Args:
         data (pd.DataFrame): The input DataFrame.
-        start_index (int): The starting index of the window.
-        end_index (int, optional): The ending index of the window. Defaults to None.
-        length (int, optional): The length of the window if end_index is not provided. Defaults to None.
+        start_time (int): The starting second of the window.
+        end_time (int): The ending second of the window.
+        field (str, optional): The column name representing time. Defaults to 'time_rel(sec)'.
     
     Returns:
         pd.DataFrame: The sliced window of the DataFrame.
     """
-    
-    # Allow for lengths to be defined
-    if length is not None and end_index is None:
-        end_index = start_index + length
 
-    # Check the end index is after start index
-    if end_index < start_index:
-        print(f"Start index [{start_index}] must be before end index [{end_index}]")
+    # Check if the start time is before the end time
+    if start_time > end_time:
+        print(f"Start time [{start_time}] must be before end time [{end_time}]")
         return data
 
-    return data.iloc[start_index:end_index]
+    # Create a mask for the desired time window
+    mask = (data[field] >= start_time) & (data[field] <= end_time)
+    return data[mask]
     
+
