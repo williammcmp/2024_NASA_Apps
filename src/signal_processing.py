@@ -76,7 +76,8 @@ def lowpass_filter(
     filtered_data = filtfilt(b, a, data_series)
     return filtered_data
 
-def find_seismic_event(signal_df : pd.DataFrame, velcoity_field: str = 'velocity(m/s)', sampleFreq : float = 6.625, time_field : str = 'time_rel(sec)', showPlot: bool = False, plotPath: str = None, expected_start : float = None) -> tuple[pd.DataFrame, int]:
+def find_seismic_event(signal_df : pd.DataFrame, velcoity_field: str = 'velocity(m/s)', sampleFreq : float = 6.625, time_field : str = 'time_rel(sec)', 
+                       showPlot: bool = False, plotPath: str = None, expected_start : float = None, location : str = 'lunar') -> tuple[pd.DataFrame, int]:
 
     # Validate the the target field in present in the dataFrame
     if velcoity_field in signal_df.columns:
@@ -85,9 +86,25 @@ def find_seismic_event(signal_df : pd.DataFrame, velcoity_field: str = 'velocity
     else:
         print(f"Warning: {velcoity_field} is NOT a valid filed in {signal_df.columns}")
 
+    # The bandpass and offset fro the different locations of recorings
+    loc_settings = {
+        "lunar" : {
+            "high_pass" : 0.8,
+            "low_pass" : 0.6,
+            'start_offset' : 500,
+            'end_offset': 5000
+            },
+        'mars' : {
+            "high_pass" : 0.8,
+            "low_pass" : 0.6,
+            'start_offset' : 100,
+            'end_offset': 1000
+        }
+    }
+
     # run the band pass filter on the signal
-    high_passed_signal = highpass_filter(signal, 0.8, sampleFreq)
-    filtered_signal = lowpass_filter(high_passed_signal, 0.6, sampleFreq)
+    high_passed_signal = highpass_filter(signal, loc_settings[location]['high_pass'], sampleFreq)
+    filtered_signal = lowpass_filter(high_passed_signal, loc_settings[location]['low_pass'], sampleFreq)
 
     # Compute the double difference to find the maxiumin rate of change of the seismic event --> assuming this to be the peak of the seismic wave
     filtered_signal_diff = np.diff(np.diff(filtered_signal))
@@ -97,11 +114,11 @@ def find_seismic_event(signal_df : pd.DataFrame, velcoity_field: str = 'velocity
 
     # Get start/end  time of window
     # TODO set different offsets based on if mars or lunar recordings 
-    start_time = signal_df[time_field].iloc[peak_index] - 500 # offset to capture the front of the wave
-    end_time = start_time + 5000 # offset of caputer end of the wave
+    start_time = signal_df[time_field].iloc[peak_index] - loc_settings[location]['start_offset'] # offset to capture the front of the wave
+    end_time = start_time +  loc_settings[location]['end_offset'] # offset of caputer end of the wave
 
 
-    seismic_event = get_timed_window(signal_df, start_time - 500, end_time)
+    seismic_event = get_timed_window(signal_df, start_time -  loc_settings[location]['start_offset'], end_time, time_field)
 
     # Plotting the the outcome of the Seismic wave analysis
     if showPlot:
