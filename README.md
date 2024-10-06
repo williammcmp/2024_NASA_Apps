@@ -1,5 +1,7 @@
 # 2024_NASA_Apps
 
+![Example Plot from repo](plots/xa.s12.00.mhz.1970-01-19HR00_evid00002.csv.png)
+
 ## Setup
 
 Follow these steps to set up your Python development environment:
