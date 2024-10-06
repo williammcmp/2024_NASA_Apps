@@ -76,7 +76,7 @@ def lowpass_filter(
     filtered_data = filtfilt(b, a, data_series)
     return filtered_data
 
-def find_seismic_event(signal_df : pd.DataFrame, velcoity_field: str = 'velocity(m/s)', sampleFreq : float = 6.625, time_field : str = 'time_rel(sec)', showPlot: bool = False, plotPath: str = None, expected_start : float = None) -> pd.DataFrame:
+def find_seismic_event(signal_df : pd.DataFrame, velcoity_field: str = 'velocity(m/s)', sampleFreq : float = 6.625, time_field : str = 'time_rel(sec)', showPlot: bool = False, plotPath: str = None, expected_start : float = None) -> tuple[pd.DataFrame, int]:
 
     # Validate the the target field in present in the dataFrame
     if velcoity_field in signal_df.columns:

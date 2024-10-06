@@ -14,18 +14,21 @@ from src.utilis import load_dataframe, save_dataframe, get_file_names, get_mseed
 from src.signal_processing import find_seismic_event
 
 # Initialize Ray
-ray.init(num_cpus=8) # Chnage this number based on the number CPU cores you have avaliable on you system
+ray.init(num_cpus=12) # Chnage this number based on the number CPU cores you have avaliable on you system
+
+loc_name = "S16_GradeB/"
 
 # The path where all the raw_data files are located
-signal_data_folder = "E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Data/lunar/training/data/S12_GradeA/"
+signal_data_folder = 'E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Data/mars/training/data/'
 
-# Where the saved dataframes will be exported to
-seismic_event_output_folder = "E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Data/lunar/seismic_events/diff_diff_method/"
+# Where the saved dataframes/stats will be exported to
+seismic_event_output_folder = 'E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Data/mars/diff_diff_model/training/'
 
-plot_paths = "E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Analysis/plots/secsimic events/"
+# Where the plots will be saved to
+plot_paths = 'E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Analysis/plots/secsimic events/mars plots/training/'
 
 # The reference data from the training data catalog
-reference_df = load_dataframe("E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Data/lunar/training/catalogs/apollo12_catalog_GradeA_final.csv")
+reference_df = load_dataframe("E:/Users/William/Uni/Swinburne OneDrive/OneDrive - Swinburne University/2024 NASA Space Apps Challange/Data/mars/training/catalogs/Mars_InSight_training_catalog_final.csv")
 
 # Get the list of names from the signal data folder
 list_of_names = get_file_names(signal_data_folder, '.csv')
@@ -52,19 +55,24 @@ def process_file(index, name):
         velcoity_field=velocity_field,
         time_field=time_field,
         sampleFreq=sample_rate, 
-        showPlot=False, 
+        showPlot=True, 
         plotPath=plot_paths + name + '.png', 
-        expected_start=ref_row[get_col_from_pattern(ref_row, 'rel')]
+        # expected_start=ref_row[get_col_from_pattern(reference_df, 'rel')]
     )
 
     # Save the signal data
-    save_dataframe(seismic_event, seismic_event_output_folder + name)
+    # save_dataframe(seismic_event, seismic_event_output_folder + name)
 
     # Return the stats for this file
     return {
         'filename': name,
-        'Expected start (s)': ref_row[get_col_from_pattern(ref_row, 'rel')],
-        'Calculated start (s)': seismic_event_start
+        'Expected start (s)': ref_row[get_col_from_pattern(reference_df, 'rel')],
+        'Calculated start (s)': seismic_event_start,
+        'Orignal recording length (s)': signal_data[time_field].max(),
+        'Cut recording length (s)': seismic_event[time_field].max() - seismic_event[time_field].min(),
+        'Cropped percent (%)': 100 * (seismic_event[time_field].max() - seismic_event[time_field].min()) / signal_data[time_field].max(),
+        'Percent start difference to orignal length (%)':  100* (seismic_event_start - ref_row[get_col_from_pattern(reference_df, 'rel')]) / signal_data[time_field].max(),
+        'Percent start difference to cropped length (%)':  100* (seismic_event_start - ref_row[get_col_from_pattern(reference_df, 'rel')]) / (seismic_event[time_field].max() - seismic_event[time_field].min())
     }
 
 # Launch parallel tasks and get their results
