@@ -51,7 +51,7 @@ def save_dataframe(df: pd.DataFrame, file_path: str, force_format: str = None, h
         print(f"Error saving DataFrame: {e}")
         return False
     
-def load_dataframe(file_path: str, enable_pyarrow = False):
+def load_dataframe(file_path: str, enable_pyarrow = False) -> pd.DataFrame:
     """
     Load a pandas DataFrame from a specified file format.
     
